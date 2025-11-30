@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'servicos',
     'chat',
     'agenda',
+    'notificacoes',
 ]
 
 # Configurações SASS
