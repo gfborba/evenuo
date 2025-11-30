@@ -8,6 +8,7 @@ urlpatterns = [
     path('cadastrar/', views.cadastrar_servico, name='cadastrar_servico'),
     path('<int:servico_id>/', views.detalhes_servico, name='detalhes_servico'),
     path('<int:servico_id>/editar/', views.editar_servico, name='editar_servico'),
+    path('<int:servico_id>/deletar/', views.deletar_servico, name='deletar_servico'),
     path('<int:servico_id>/adicionar-item/', views.adicionar_item, name='adicionar_item'),
     path('<int:servico_id>/remover-item/<int:item_id>/', views.remover_item, name='remover_item'),
     path('<int:servico_id>/adicionar-tag/', views.adicionar_tag, name='adicionar_tag'),
