@@ -232,7 +232,6 @@
     background: lighten($roxo-3, 15%);
     padding: 1.5rem;
     border-radius: 8px;
-    border-left: 4px solid $roxo-1;
     
     p {
       margin: 0.5rem 0;
@@ -276,6 +275,10 @@
       padding: 1.5rem;
       border: 1px solid $roxo-3;
       transition: all 0.3s ease;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       
       &:hover {
         transform: translateY(-4px);
@@ -302,6 +305,8 @@
           border-radius: 6px;
           border: 2px solid $roxo-3;
           transition: all 0.3s ease;
+          width: 100px;
+          height: 100px !important;
           
           &:hover {
             border-color: $roxo-1;
