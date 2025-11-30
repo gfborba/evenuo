@@ -86,11 +86,11 @@
                     <div class="item-card" data-item-id="{{ item.id }}">
                         <div class="item-info">
                             <h4>{{ item.nome }}</h4>
-                            {% if item.descricao %}
-                                <p>{{ item.descricao }}</p>
-                            {% endif %}
                             {% if item.imagem %}
                                 <img src="{{ item.imagem.url }}" alt="{{ item.nome }}" style="max-width: 100px; height: auto;">
+                            {% endif %}
+                            {% if item.descricao %}
+                                <p>{{ item.descricao }}</p>
                             {% endif %}
                         </div>
                         <button class="btn-remover" data-item-id="{{ item.id }}">Remover</button>

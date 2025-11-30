@@ -5,7 +5,7 @@
         <h1>Meus Serviços</h1>
         
         <div class="header-actions">
-            <a href="{% url 'cadastrar_servico' %}" class="btn-primary">Cadastrar Novo Serviço</a>
+            <a href="{% url 'cadastrar_servico' %}" class="btn-primary service">Cadastrar Novo Serviço</a>
         </div>
         
         {% if servicos %}
@@ -54,7 +54,7 @@
         {% else %}
             <div class="empty-state">
                 <p>Você ainda não cadastrou nenhum serviço.</p>
-                <a href="{% url 'cadastrar_servico' %}" class="btn-primary">Cadastrar Primeiro Serviço</a>
+                <a href="{% url 'cadastrar_servico' %}" class="btn-primary service">Cadastrar Primeiro Serviço</a>
             </div>
         {% endif %}
         

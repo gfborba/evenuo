@@ -367,6 +367,27 @@ def editar_servico(request, servico_id):
         return redirect('detalhes_servico', servico_id=servico.id)
 
 @login_required
+def deletar_servico(request, servico_id):
+    servico = get_object_or_404(Servico, id=servico_id)
+    
+    try:
+        fornecedor = Fornecedor.objects.get(user=request.user)
+        if servico.fornecedor != fornecedor:
+            messages.error(request, 'Você não tem permissão para deletar este serviço.')
+            return redirect('meus_servicos')
+    except Fornecedor.DoesNotExist:
+        messages.error(request, 'Acesso restrito apenas para fornecedores.')
+        return redirect('index')
+    
+    if request.method == 'POST':
+        nome_servico = servico.nome
+        servico.delete()
+        messages.success(request, f'Serviço "{nome_servico}" deletado com sucesso!')
+        return redirect('meus_servicos')
+    
+    return redirect('meus_servicos')
+
+@login_required
 def solicitar_orcamento(request):
     """Processa a solicitação de orçamento"""
     if request.method != 'POST':
