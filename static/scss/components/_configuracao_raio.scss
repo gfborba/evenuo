@@ -1,10 +1,10 @@
 // Configuração de Raio de Cobertura
 .config-card {
-  background: linear-gradient(135deg, #9baaed 0%, #cba1f5 100%);
+  background: linear-gradient(135deg, #846db791 0%, #545157 100%);
   border-radius: 20px;
   padding: 2.5rem;
   margin: 2rem auto;
-  max-width: 800px;
+  max-width: 1200px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   color: white;
   position: relative;
@@ -70,7 +70,6 @@
     border-radius: 15px;
     padding: 1.5rem;
     margin-bottom: 2rem;
-    border-left: 4px solid #4CAF50;
 
     h3 {
       font-size: 1.2rem;
@@ -154,9 +153,8 @@
         }
 
         &:has(input:checked) {
-          border-color: #4CAF50;
-          background: rgba(76, 175, 80, 0.2);
-          box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+          border-color: #7e4caf;
+          background: rgba(146, 126, 191, 0.3)
         }
       }
     }
@@ -178,7 +176,7 @@
 
       &:focus {
         outline: none;
-        border-color: #4CAF50;
+        border-color: #7e4caf;
         background: rgba(255, 255, 255, 0.15);
         box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
       }
