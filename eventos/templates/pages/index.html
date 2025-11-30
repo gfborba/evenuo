@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Sistema de Eventos</h1>
+
+    <div class="welcome-content">
+        {% if is_fornecedor %}
+        <div class="fornecedor-actions">
+            <h2>Área do Fornecedor</h2>
+            <p>Gerencie seus serviços e conecte-se com organizadores de eventos.</p>
+            <div class="action-buttons">
+                <a href="{% url 'meus_servicos' %}" class="btn btn-primary">Meus Serviços</a>
+                <a href="{% url 'configurar_raio_cobertura' %}" class="btn btn-secondary">⚙️ Configurar Raio de Cobertura</a>
+                <a href="{% url 'minhas_solicitacoes_fornecedor' %}" class="btn btn-info">💰 Minhas Solicitações de Orçamento</a>
+                <a href="{% url 'agenda' %}" class="btn btn-warning">📅 Minha Agenda</a>
+            </div>
+            
+            <div class="home-dashboard">
+                <div class="calendar-wrapper">
+                    <div id="calendar-mini-fornecedor" class="calendar-mini-container"></div>
+                </div>
+                <div class="upcoming-events-wrapper">
+                    <h3>Próximas datas</h3>
+                    <div id="upcoming-events-fornecedor" class="upcoming-events">
+                        <p class="loading">Carregando eventos...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 class="mt-4">Todos os Eventos Disponíveis</h3>
+            {% if eventos %}
+            <div class="list-group">
+                {% for evento in eventos %}
+                <div class="list-group-item">
+                    <h5><a href="{% url 'detalhes_evento' evento.id %}">{{ evento.nomeEvento }}</a></h5>
+                    <p><strong>Data:</strong> {{ evento.dataEvento|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Local:</strong> {{ evento.localEvento }}</p>
+                    {% if evento.endereco_completo %}
+                    <p><strong>Endereço:</strong> {{ evento.endereco_completo }}</p>
+                    {% endif %}
+                    {% if evento.previsao_participantes %}
+                    <p><strong>Previsão de Participantes:</strong> {{ evento.previsao_participantes }} pessoas</p>
+                    {% endif %}
+                    <p>{{ evento.descricaoEvento }}</p>
+                    <p><small>Organizador: {{ evento.idUsuario.user.get_full_name }}</small></p>
+                    <a href="{% url 'detalhes_evento' evento.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> Detalhes
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>Não há eventos cadastrados no momento.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if is_organizador %}
+        <div class="organizador-actions">
+            <h2>Área do Organizador</h2>
+            <p>Encontre fornecedores e organize seus eventos.</p>
+            <div class="action-buttons">
+                <a href="{% url 'criar_evento' %}" class="btn btn-success">Criar Novo Evento</a>
+                <a href="{% url 'todos_servicos' %}" class="btn btn-primary">Ver Todos os Serviços</a>
+                <a href="{% url 'minhas_solicitacoes_organizador' %}" class="btn btn-info">💰 Minhas Solicitações de Orçamento</a>
+                <a href="{% url 'agenda' %}" class="btn btn-warning">📅 Minha Agenda</a>
+            </div>
+            
+            <div class="home-dashboard">
+                <div class="calendar-wrapper">
+                    <div id="calendar-mini-organizador" class="calendar-mini-container"></div>
+                </div>
+                <div class="upcoming-events-wrapper">
+                    <h3>Próximas datas</h3>
+                    <div id="upcoming-events-organizador" class="upcoming-events">
+                        <p class="loading">Carregando eventos...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 class="mt-4">Meus Eventos</h3>
+            {% if eventos %}
+            <div class="list-group">
+                {% for evento in eventos %}
+                <div class="list-group-item">
+                    <h5><a href="{% url 'detalhes_evento' evento.id %}">{{ evento.nomeEvento }}</a></h5>
+                    <p><strong>Data:</strong> {{ evento.dataEvento|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Local:</strong> {{ evento.localEvento }}</p>
+                    {% if evento.endereco_completo %}
+                    <p><strong>Endereço:</strong> {{ evento.endereco_completo }}</p>
+                    {% endif %}
+                    {% if evento.previsao_participantes %}
+                    <p><strong>Previsão de Participantes:</strong> {{ evento.previsao_participantes }} pessoas</p>
+                    {% endif %}
+                    <p>{{ evento.descricaoEvento }}</p>
+                    <div class="mt-2">
+                        <a href="{% url 'editar_evento' evento.id %}" class="btn btn-sm btn-primary">Editar</a>
+                        <a href="{% url 'excluir_evento' evento.id %}" class="btn btn-sm btn-danger">Excluir</a>
+                        <a href="{% url 'detalhes_evento' evento.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> Detalhes
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>Você ainda não criou nenhum evento.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- FullCalendar CDN para miniatura -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js'></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('calendar-mini-organizador')) {
+            inicializarCalendarioMiniatura('organizador');
+            carregarProximosEventos('organizador');
+        }
+        if (document.getElementById('calendar-mini-fornecedor')) {
+            inicializarCalendarioMiniatura('fornecedor');
+            carregarProximosEventos('fornecedor');
+        }
+    });
+    
+    function inicializarCalendarioMiniatura(userType) {
+        const calendarEl = document.getElementById(`calendar-mini-${userType}`);
+        if (!calendarEl) return;
+        
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'pt-br',
+            headerToolbar: {
+                left: 'prev',
+                center: 'title',
+                right: 'next'
+            },
+            buttonText: {
+                today: 'Hoje'
+            },
+            height: 'auto',
+            editable: false,
+            selectable: false,
+            dayMaxEvents: 2,
+            weekends: true,
+            
+            // Carregar eventos
+            events: function(info, successCallback, failureCallback) {
+                fetch('/agenda/compromissos/')
+                .then(response => response.json())
+                .then(data => {
+                    const eventos = data.map(evento => {
+                        // Se é um compromisso compartilhado, usar cor especial
+                        let backgroundColor = evento.backgroundColor;
+                        let borderColor = evento.borderColor;
+                        
+                        if (evento.extendedProps && evento.extendedProps.compartilhado) {
+                            backgroundColor = '#ff9800'; // Laranja para compromissos compartilhados
+                            borderColor = '#ff9800';
+                        }
+                        
+                        return {
+                            ...evento,
+                            backgroundColor: backgroundColor,
+                            borderColor: borderColor
+                        };
+                    });
+                    successCallback(eventos);
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar eventos:', error);
+                    failureCallback(error);
+                });
+            },
+            
+            // Clicar em evento
+            eventClick: function(arg) {
+                // Redirecionar para a agenda completa em vez de tentar abrir detalhes
+                window.location.href = '/agenda/';
+            },
+            
+            // Clicar em data
+            dateClick: function(arg) {
+                window.location.href = '/agenda/';
+            }
+        });
+        
+        calendar.render();
+        
+        // Adicionar classe para estilos específicos
+        calendarEl.classList.add('fc-mini');
+    }
+    
+    function carregarProximosEventos(userType) {
+        const upcomingEventsEl = document.getElementById(`upcoming-events-${userType}`);
+        if (!upcomingEventsEl) return;
+        
+        fetch('/agenda/compromissos-miniatura/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.length === 0) {
+                upcomingEventsEl.innerHTML = '<p class="no-events">Nenhum evento agendado para os próximos dias.</p>';
+                return;
+            }
+            
+            let html = '';
+            data.forEach(evento => {
+                const dataInicio = new Date(evento.data_inicio_iso);
+                const agora = new Date();
+                const diffMs = dataInicio - agora;
+                const diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                const diffHoras = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                
+                let countdownText = '';
+                if (diffMs > 0) {
+                    countdownText = `Faltam ${diffDias} dia${diffDias !== 1 ? 's' : ''} e ${diffHoras} hora${diffHoras !== 1 ? 's' : ''}`;
+                }
+
+                html += `
+                    <div class="upcoming-event-item">
+                        <div class="event-item-date">${evento.data_inicio}</div>
+                        <div class="event-item-card">
+                            <div class="event-details">
+                                <div class="event-info">
+                                    <p class="event-title">${evento.titulo}</p>
+                                    <p class="event-description">${ evento.descricao || 'Sem descrição.' }</p>
+                                </div>
+                            </div>
+                            <div class="event-actions">
+                                <button class="btn-view-event" onclick="window.location.href='/agenda/'"><i class="bi bi-eye"></i></button>
+                            </div>
+                        </div>
+                        <div class="event-item-countdown">
+                            ${countdownText}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            upcomingEventsEl.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Erro ao carregar eventos:', error);
+            upcomingEventsEl.innerHTML = '<p class="no-events">Erro ao carregar eventos.</p>';
+        });
+    }
+</script>
+{% endblock %}

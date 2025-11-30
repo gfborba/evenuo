@@ -1,0 +1,319 @@
+// Configuração de Raio de Cobertura
+.config-card {
+  background: linear-gradient(135deg, #9baaed 0%, #cba1f5 100%);
+  border-radius: 20px;
+  padding: 2.5rem;
+  margin: 2rem auto;
+  max-width: 800px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  color: white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-align: center;
+    background: linear-gradient(45deg, #fff, #f0f0f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .current-config {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    h4 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    p {
+      margin: 0.5rem 0;
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.9);
+
+      strong {
+        color: #fff;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .info-section {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid #4CAF50;
+
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    p {
+      margin: 0.5rem 0;
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.6;
+
+      strong {
+        color: #fff;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .form-group {
+    margin-bottom: 2rem;
+
+    label {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      .radio-option {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+          transform: translateY(-2px);
+        }
+
+        input[type="radio"] {
+          display: none;
+        }
+
+        input[type="radio"]:checked + label {
+          .radio-option {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+          }
+        }
+
+        label {
+          display: flex;
+          flex-direction: column;
+          cursor: pointer;
+          margin: 0;
+
+          strong {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.5rem;
+          }
+
+          .option-description {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+          }
+        }
+
+        &:has(input:checked) {
+          border-color: #4CAF50;
+          background: rgba(76, 175, 80, 0.2);
+          box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+      }
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 1rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      &:focus {
+        outline: none;
+        border-color: #4CAF50;
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+      }
+
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+      }
+    }
+
+    .help-text {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+
+    .btn-primary,
+    .btn-secondary {
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      min-width: 150px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, #4CAF50, #45a049);
+      color: white;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+      }
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .config-card {
+    margin: 1rem;
+    padding: 1.5rem;
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    .form-actions {
+      flex-direction: column;
+      align-items: center;
+
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+
+    .radio-group {
+      .radio-option {
+        padding: 1rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .config-card {
+    padding: 1rem;
+
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    .current-config,
+    .info-section {
+      padding: 1rem;
+    }
+  }
+}
+
+// Animações
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.config-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.radio-option {
+  animation: fadeInUp 0.6s ease-out;
+  animation-delay: 0.1s;
+  animation-fill-mode: both;
+}
+
+.form-actions {
+  animation: fadeInUp 0.6s ease-out;
+  animation-delay: 0.2s;
+  animation-fill-mode: both;
+} 

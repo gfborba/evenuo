@@ -1,0 +1,123 @@
+{% extends 'base_auth.html' %}
+{% block content %}
+    <div class="container">
+        <h1>Cadastro de Fornecedor</h1>
+        <form class="form-auth" action="{% url 'cadastro_fornecedor' %}" method="POST">
+            {% csrf_token %}
+            
+            <div class="field-group">
+                <input class="form-input" type="text" placeholder="Nome" name="firstname" required>
+                <input class="form-input" type="text" placeholder="Sobrenome" name="lastname" required>
+            </div>
+            
+            <input class="form-input" type="text" placeholder="Nome de usuário" name="username" required>
+            <input class="form-input" type="email" placeholder="E-mail" name="email" required>
+            <input class="form-input" type="password" placeholder="Senha" name="senha" required>
+            <input class="form-input" type="tel" placeholder="Telefone" name="telefone" required>
+            
+            <div class="address-section">
+                <h3>Endereço</h3>
+                <div class="cep-group">
+                    <input class="form-input cep-input" type="text" placeholder="CEP" name="cep" id="cep" maxlength="9" required>
+                    <button type="button" class="buscar-cep-btn" id="buscarCepBtn">Buscar CEP</button>
+                </div>
+                
+                <div class="address-fields">
+                    <input class="form-input" type="text" placeholder="Estado" name="estado" id="estado" readonly required>
+                    <input class="form-input" type="text" placeholder="Cidade" name="cidade" id="cidade" readonly required>
+                    <input class="form-input" type="text" placeholder="Bairro" name="bairro" id="bairro" readonly required>
+                    <input class="form-input" type="text" placeholder="Logradouro" name="logradouro" id="logradouro" readonly required>
+                    <input class="form-input" type="text" placeholder="Número" name="numero" id="numero" required>
+                    <input class="form-input" type="text" placeholder="Complemento" name="complemento" id="complemento">
+                </div>
+            </div>
+            
+            <select class="form-input" name="categoria" required>
+                <option value="">Selecione sua categoria</option>
+                <option value="alimentacao">Alimentação</option>
+                <option value="decoracao">Decoração</option>
+                <option value="logistica">Logística</option>
+                <option value="musica">Música e Entretenimento</option>
+                <option value="fotografia">Fotografia e Vídeo</option>
+                <option value="locacao">Locação de Equipamentos</option>
+                <option value="seguranca">Segurança</option>
+                <option value="outros">Outros</option>
+            </select>
+            
+            <button class="button" type="submit">Cadastrar como Fornecedor</button>
+            
+            {% if useralredyexist %}
+                <div class="error-message">
+                    {{ useralredyexist }}
+                </div>
+            {% endif %}
+        </form>
+        
+        <div class="back-link">
+            <a href="{% url 'escolha_cadastro' %}">← Voltar para escolha de cadastro</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cepInput = document.getElementById('cep');
+            const buscarCepBtn = document.getElementById('buscarCepBtn');
+            
+            // Máscara para CEP
+            cepInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 5) {
+                    value = value.substring(0, 5) + '-' + value.substring(5, 8);
+                }
+                e.target.value = value;
+            });
+            
+            // Buscar CEP
+            buscarCepBtn.addEventListener('click', function() {
+                const cep = cepInput.value.replace(/\D/g, '');
+                
+                if (cep.length !== 8) {
+                    alert('Por favor, digite um CEP válido com 8 dígitos.');
+                    return;
+                }
+                
+                buscarCepBtn.disabled = true;
+                
+                fetch(`{% url 'buscar_cep' %}?cep=${cep}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.erro) {
+                            alert('Erro: ' + data.erro);
+                        } else {
+                            document.getElementById('estado').value = data.estado;
+                            document.getElementById('cidade').value = data.cidade;
+                            document.getElementById('bairro').value = data.bairro;
+                            document.getElementById('logradouro').value = data.logradouro;
+                            
+                            //Habilita campos para edição
+                            document.getElementById('estado').readOnly = false;
+                            document.getElementById('cidade').readOnly = false;
+                            document.getElementById('bairro').readOnly = false;
+                            document.getElementById('logradouro').readOnly = false;
+                            document.getElementById('numero').focus();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        alert('Erro ao buscar CEP. Tente novamente.');
+                    })
+                    .finally(() => {
+                        buscarCepBtn.disabled = false;
+                    });
+            });
+            
+            //Buscar CEP automaticamente ao pressionar Enter no campo CEP
+            cepInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    buscarCepBtn.click();
+                }
+            });
+        });
+    </script>
+{% endblock %}

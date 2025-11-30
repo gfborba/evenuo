@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% csrf_token %}
+    <div class="container visualizar-servico-page">
+        <div class="servico-header">
+            <h1>{{ servico.nome }}</h1>
+            <div class="servico-status">
+                <span class="status ativo">Disponível</span>
+            </div>
+        </div>
+        
+        <div class="fornecedor-info">
+            <h3>Informações do Fornecedor</h3>
+            <div class="fornecedor-row">
+            <div class="fornecedor-info-content">
+                <p><strong>Nome:</strong> {{ servico.fornecedor.user.get_full_name|default:servico.fornecedor.user.username }}</p>
+                <p><strong>Categoria:</strong> {{ servico.fornecedor.get_categoria_display }}</p>
+                <p><strong>Telefone:</strong> {{ servico.fornecedor.telefone }}</p>
+                <p><strong>Endereço:</strong> {{ servico.fornecedor.endereco_completo }}</p>
+            </div>
+            {% if servico.fornecedor.latitude and servico.fornecedor.longitude %}
+            <div class="mapa-section">
+                <h4>Localização</h4>
+                <div id="map" style="width: 90%; height: 500px; border-radius: 8px; margin-top: 10px; margin-inline: auto;"></div>
+            </div>
+            {% endif %}
+            </div>
+        </div>
+        
+        <div class="servico-content">
+            <div class="servico-info">
+                <h3>Descrição</h3>
+                <p>{{ servico.descricao }}</p>
+            </div>
+            
+            {% if servico.tags %}
+            <div class="servico-tags">
+                <h3>Tags</h3>
+                <div class="tags-list">
+                    {% for tag in servico.get_tags_list %}
+                        <span class="tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if servico.imagens.exists %}
+            <div class="servico-imagens">
+                <h3>Fotos do Serviço</h3>
+                <div class="imagens-grid">
+                    {% for imagem in servico.imagens.all %}
+                        <div class="imagem-item">
+                            <img src="{{ imagem.imagem.url }}" alt="{{ imagem.legenda|default:'Imagem do serviço' }}">
+                            {% if imagem.legenda %}
+                                <p>{{ imagem.legenda }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="servico-meta">
+                <p><strong>Criado em:</strong> {{ servico.data_criacao|date:"d/m/Y H:i" }}</p>
+                <p><strong>Última atualização:</strong> {{ servico.data_atualizacao|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+        
+        <div class="itens-section">
+            <h3>Itens do Serviço ({{ servico.total_itens }})</h3>
+            
+            <div id="lista-itens" class="itens-lista">
+                {% for item in servico.itens.all %}
+                    <div class="item-card">
+                        <div class="item-info">
+                            <h4>{{ item.nome }}</h4>
+                            {% if item.descricao %}
+                                <p>{{ item.descricao }}</p>
+                            {% endif %}
+                            {% if item.imagem %}
+                                <img src="{{ item.imagem.url }}" alt="{{ item.nome }}">
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="empty-items">Nenhum item cadastrado ainda.</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="servico-actions">
+            <button class="btn-primary" id="btnSolicitarOrcamento">💰 Solicitar Orçamento</button>
+            <a href="{% url 'chat_room' servico.fornecedor.user.username %}" class="btn-secondary">💬 Conversar com Fornecedor</a>
+            <a href="{% url 'avaliar_fornecedor' servico.fornecedor.id %}" class="btn-secondary">⭐ Avaliar Fornecedor</a>
+            <a href="{% url 'todos_servicos' %}" class="btn-secondary">← Voltar aos Serviços</a>
+        </div>
+    </div>
+
+    <div id="modalOrcamento" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Solicitar Orçamento</h2>
+                <span class="close">&times;</span>
+            </div>
+            
+            <div id="etapa1" class="modal-body">
+                <h3>Selecione um Evento</h3>
+                <p>Escolha o evento para o qual você deseja solicitar um orçamento:</p>
+                
+                <div id="lista-eventos" class="eventos-lista">
+                    {% for evento in eventos_organizador %}
+                    <div class="evento-item" 
+                         data-evento-id="{{ evento.id }}"
+                         data-evento-nome="{{ evento.nomeEvento|escapejs }}"
+                         data-evento-data="{{ evento.dataEvento|date:"d/m/Y H:i"|escapejs }}"
+                         data-evento-local="{{ evento.localEvento|escapejs }}"
+                         data-evento-participantes="{{ evento.previsao_participantes|default:0 }}"
+                         data-evento-endereco="{{ evento.endereco_completo|default:""|escapejs }}">
+                        <h4>{{ evento.nomeEvento }}</h4>
+                        <p><strong>Data:</strong> {{ evento.dataEvento|date:"d/m/Y H:i" }}</p>
+                        <p><strong>Local:</strong> {{ evento.localEvento }}</p>
+                        {% if evento.previsao_participantes %}
+                        <p><strong>Participantes:</strong> {{ evento.previsao_participantes }} pessoas</p>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="sem-eventos">Você ainda não criou nenhum evento. <a href="{% url 'criar_evento' %}">Criar evento</a></p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div id="etapa2" class="modal-body">
+                <h3>Detalhes do Orçamento</h3>
+                
+                <div class="evento-selecionado">
+                    <h4 id="nome-evento-selecionado"></h4>
+                    <p><strong>Data:</strong> <span id="data-evento-selecionado"></span></p>
+                    <p><strong>Local:</strong> <span id="local-evento-selecionado"></span></p>
+                    <p><strong>Participantes:</strong> <span id="participantes-evento-selecionado"></span></p>
+                    <p><strong>Endereço:</strong> <span id="endereco-evento-selecionado"></span></p>
+                </div>
+                
+                <div class="itens-selecao">
+                    <h4>Selecione os Itens de Interesse</h4>
+                    <div id="lista-itens-selecao">
+                        {% for item in servico.itens.all %}
+                        <div class="item-selecao">
+                            <label>
+                                <input type="checkbox" name="itens_selecionados" value="{{ item.id }}" class="item-checkbox">
+                                <strong>{{ item.nome }}</strong>
+                                {% if item.descricao %}
+                                <br><small>{{ item.descricao }}</small>
+                                {% endif %}
+                            </label>
+                        </div>
+                        {% empty %}
+                        <p>Este serviço não possui itens cadastrados.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="consideracoes">
+                    <h4>Considerações Adicionais</h4>
+                    <textarea id="consideracoes" placeholder="Descreva detalhes específicos, requisitos especiais, ou qualquer informação adicional que possa ajudar o fornecedor a preparar o orçamento..." rows="4"></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn-secondary" id="btnVoltar">← Voltar</button>
+                    <button class="btn-primary" id="btnEnviarSolicitacao">Enviar Solicitação</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if servico.fornecedor.latitude and servico.fornecedor.longitude %}
+    <script type="text/javascript">
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            key: "{{ google_maps_api_key }}",
+            v: "weekly",
+        });
+        
+        async function initMap() {
+            // A localização do fornecedor
+            const position = { 
+                lat: parseFloat("{{ servico.fornecedor.latitude }}"), 
+                lng: parseFloat("{{ servico.fornecedor.longitude }}") 
+            };
+            
+            // Request needed libraries.
+            const { Map } = await google.maps.importLibrary("maps");
+            const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+            
+            // O mapa, centralizado na posição do fornecedor
+            const map = new Map(document.getElementById("map"), {
+                zoom: 15,
+                center: position,
+                mapId: "DEMO_MAP_ID",
+            });
+            
+            // O marcador, posicionado na localização do fornecedor
+            const marker = new AdvancedMarkerElement({
+                map: map,
+                position: position,
+                title: "{{ servico.fornecedor.user.get_full_name|default:servico.fornecedor.user.username }}",
+            });
+        }
+        
+        initMap();
+    </script>
+    {% endif %}
+
+    <script type="text/javascript">
+        let eventoSelecionado = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Event listener para o botão de abrir modal
+            document.getElementById('btnSolicitarOrcamento').addEventListener('click', abrirModalOrcamento);
+            
+            // Event listener para o botão de fechar modal
+            document.querySelector('.close').addEventListener('click', fecharModalOrcamento);
+            
+            // Event listener para o botão voltar
+            document.getElementById('btnVoltar').addEventListener('click', voltarEtapa1);
+            
+            // Event listener para o botão enviar solicitação
+            document.getElementById('btnEnviarSolicitacao').addEventListener('click', enviarSolicitacao);
+            
+            // Event listeners para os itens de evento
+            document.querySelectorAll('.evento-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.eventoId);
+                    const nome = this.dataset.eventoNome;
+                    const data = this.dataset.eventoData;
+                    const local = this.dataset.eventoLocal;
+                    const participantes = parseInt(this.dataset.eventoParticipantes);
+                    const endereco = this.dataset.eventoEndereco;
+                    
+                    selecionarEvento(id, nome, data, local, participantes, endereco);
+                });
+            });
+        });
+        
+        function abrirModalOrcamento() {
+            document.getElementById('modalOrcamento').style.display = 'block';
+        }
+        
+        function fecharModalOrcamento() {
+            document.getElementById('modalOrcamento').style.display = 'none';
+            document.getElementById('etapa1').style.display = 'block';
+            document.getElementById('etapa2').style.display = 'none';
+            eventoSelecionado = null;
+        }
+        
+        function selecionarEvento(id, nome, data, local, participantes, endereco) {
+            eventoSelecionado = {
+                id: id,
+                nome: nome,
+                data: data,
+                local: local,
+                participantes: participantes,
+                endereco: endereco
+            };
+            
+            document.getElementById('nome-evento-selecionado').textContent = nome;
+            document.getElementById('data-evento-selecionado').textContent = data;
+            document.getElementById('local-evento-selecionado').textContent = local;
+            document.getElementById('participantes-evento-selecionado').textContent = participantes > 0 ? participantes + ' pessoas' : 'Não informado';
+            document.getElementById('endereco-evento-selecionado').textContent = endereco || 'Não informado';
+            
+            document.getElementById('etapa1').style.display = 'none';
+            document.getElementById('etapa2').style.display = 'block';
+        }
+        
+        function voltarEtapa1() {
+            document.getElementById('etapa1').style.display = 'block';
+            document.getElementById('etapa2').style.display = 'none';
+            eventoSelecionado = null;
+        }
+        
+        function enviarSolicitacao() {
+            console.log('Função enviarSolicitacao chamada');
+            
+            if (!eventoSelecionado) {
+                alert('Por favor, selecione um evento.');
+                return;
+            }
+            
+            // Coletar itens selecionados
+            const itensSelecionados = [];
+            document.querySelectorAll('input[name="itens_selecionados"]:checked').forEach(checkbox => {
+                itensSelecionados.push(checkbox.value);
+            });
+            
+            const consideracoes = document.getElementById('consideracoes').value;
+            
+            //Enviando os dados para o backend
+            const dados = {
+                evento_id: eventoSelecionado.id,
+                servico_id: parseInt("{{ servico.id }}"),
+                itens_selecionados: itensSelecionados,
+                consideracoes: consideracoes
+            };
+            
+            console.log('Dados a serem enviados:', dados);
+            console.log('CSRF Token:', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            fetch('{% url "solicitar_orcamento" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(dados)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    alert('Solicitação de orçamento enviada com sucesso!');
+                    fecharModalOrcamento();
+                } else {
+                    alert('Erro: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao enviar solicitação. Tente novamente.');
+            });
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalOrcamento');
+            if (event.target == modal) {
+                fecharModalOrcamento();
+            }
+        }
+    </script>
+{% endblock %}
