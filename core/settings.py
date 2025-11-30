@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-import dj_database_url 
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -132,12 +131,18 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Configuração do PostgreSQL
+DB_PASSWORD = os.getenv('DB_PASSWORD')
 DATABASES = {
-    'default': dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        default=os.getenv('DATABASE_URL', 'sqlite:///' + str(BASE_DIR / 'db.sqlite3')) if DEBUG else os.getenv('DATABASE_URL', 'postgresql://postgres:password@localhost:5432/eventos_db'),
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'eventos_db'),
+        'USER': 'postgres',
+        'PASSWORD': DB_PASSWORD,
+        'HOST': 'melani.cd884w2o4g0h.us-east-2.rds.amazonaws.com',
+        'PORT': '5432',
+        'CONN_MAX_AGE': 600,
+    }
 }
 
 
