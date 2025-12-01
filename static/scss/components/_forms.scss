@@ -1980,4 +1980,16 @@ select.form-control {
             }
         }
     }
-} 
+}
+
+//Formulário de eventos
+.event-form-page {
+    input.form-control{
+        padding: 10px;
+
+        &:focus{
+            border-color: $roxo-1;
+            box-shadow: 0 0 0 .25rem rgba(84, 8, 183, 0.25);
+        }
+    }
+}
