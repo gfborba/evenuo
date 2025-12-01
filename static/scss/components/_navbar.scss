@@ -75,6 +75,22 @@
             }
         }
 
+        //Estilo para o ícone de notificações
+        .notification-icon {
+            font-size: 1.2rem;
+            padding: 0.5rem 0.8rem !important;
+            position: relative;
+            
+            i {
+                font-size: 1.2rem;
+            }
+            
+            &:hover {
+                color: $roxo-1;
+                background: rgba($roxo-1, 0.1);
+            }
+        }
+
         // Estilo para o botão "Meus Chats"
         .btn-primary {
             background: linear-gradient(135deg, $roxo-1, darken($roxo-1, 10%));
