@@ -7,6 +7,7 @@ from django.contrib.auth.models import AnonymousUser
 
 from .models import Room, Message
 from django.contrib.auth.models import User
+from notificacoes.utils import criar_notificacao_chat
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
@@ -70,6 +71,23 @@ class ChatConsumer(WebsocketConsumer):
             msg = Message.objects.create(
                 room=self.room, sender=self.scope["user"], message=message
             )
+            
+            #Cria notificação para o destinatário (outro usuário na sala)
+            try:
+                other_users = self.room.users.exclude(id=self.scope["user"].id)
+                if other_users.exists():
+                    destinatario = other_users.first()
+                    #Cria notificação apenas se o destinatário não for o próprio remetente
+                    if destinatario.id != self.scope["user"].id:
+                        criar_notificacao_chat(
+                            usuario_destino=destinatario,
+                            usuario_remetente=self.scope["user"],
+                            url_redirecionamento=f'/chat/{self.scope["user"].username}/'
+                        )
+            except Exception as e:
+                print(f"Erro ao criar notificação de chat: {e}")
+                import traceback
+                traceback.print_exc()
             
             #Verifica se channel_layer existe antes de enviar
             if hasattr(self, 'channel_layer') and self.channel_layer is not None:
